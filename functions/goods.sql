@@ -13,7 +13,7 @@ $$
 begin
   return query
     insert into Goods (user_id, name, category, weight, price, volume)
-      values (_user_id, _name, _category, _weight, _price, _volume) returning id;
+      values (_user_id, _name, _category, _weight, _price, _volume) returning Goods.id;
 end;
 $$
 language plpgsql;
@@ -32,8 +32,8 @@ create or replace function remove_item(
 $$
 begin
   return query
-    delete from Goods where id = _id
-      returning user_id, name, category, weight, price, volume;
+    delete from Goods g where id = _id
+      returning g.user_id, g.name, g.category, g.weight, g.price, g.volume;
 end;
 $$
 language plpgsql;
@@ -53,8 +53,8 @@ create or replace function set_item_category(
 $$
 begin
   return query
-    update Goods set category = _category where id = _id
-      returning user_id, name, category, weight, price, volume;
+    update Goods set category = _category where Goods.id = _id
+      returning Goods.user_id, Goods.name, Goods.category, Goods.weight, Goods.price, Goods.volume;
 end;
 $$
 language plpgsql;
@@ -74,8 +74,8 @@ create or replace function set_item_name(
 $$
 begin
   return query
-    update Goods set name = _name where id = _id
-      returning user_id, name, category, weight, price, volume;
+    update Goods set name = _name where Goods.id = _id
+      returning Goods.user_id, Goods.name, Goods.category, Goods.weight, Goods.price, Goods.volume;
 end;
 $$
 language plpgsql;
@@ -95,8 +95,8 @@ create or replace function set_item_price(
 $$
 begin
   return query
-    update Goods set price = _price where id = _id
-      returning user_id, name, category, weight, price, volume;
+    update Goods set price = _price where Goods.id = _id
+      returning Goods.user_id, Goods.name, Goods.category, Goods.weight, Goods.price, Goods.volume;
 end;
 $$
 language plpgsql;
@@ -117,8 +117,8 @@ create or replace function set_item_weight_volume(
 $$
 begin
   return query
-    update Goods set weight = _weight, volume = _volume where id = _id
-      returning user_id, name, category, weight, price, volume;
+    update Goods set weight = _weight, volume = _volume where Goods.id = _id
+      returning Goods.user_id, Goods.name, Goods.category, Goods.weight, Goods.price, Goods.volume;
 end;
 $$
 language plpgsql;
@@ -128,16 +128,12 @@ create or replace function get_user_items_avg_price(
   _id int
 ) returns table (
   id int,
-  name varchar(60),
-  category varchar(30),
-  weight numeric(5, 2),
-  price numeric(8, 2),
-  volume numeric(6,2)
+  avg_price numeric
 ) as
 $$
 begin
   return query
-    select user_id, avg(price) from Goods group by user_id having user_id = _id;
+    select user_id, avg(price) as avg_price from Goods g group by g.user_id having g.user_id = _id;
 end;
 $$
 language plpgsql;

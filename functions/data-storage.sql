@@ -14,7 +14,7 @@ begin
   return query
     insert into StorageData (item_id, store_price, end_date)
       values (_item_id, _store_price, _end_date)
-      returning id, start_date, status, fine;
+      returning StorageData.id, StorageData.start_date, StorageData.status, StorageData.fine;
 end;
 $$
 language plpgsql;
@@ -25,16 +25,16 @@ create or replace function remove_sdata(
 ) returns table (
   item_id int,
   store_price numeric(10, 2),
-  end_date timestamp,
-  start_date timestamp,
+  fine numeric(10, 2),
   status varchar(8),
-  fine numeric(10, 2)
+  start_date timestamp,
+  end_date timestamp
 ) as
 $$
 begin
   return query
-    delete from So where id = _id
-      returning item_id, store_price, fine, status, end_date, start_date;
+    delete from StorageData sd where id = _id
+      returning sd.item_id, sd.store_price, sd.fine, sd.status, sd.start_date, sd.end_date;
 end;
 $$
 language plpgsql;
@@ -54,9 +54,9 @@ create or replace function get_item_sdata(
 $$
 begin
   return query
-    select name, id, store_price, fine, status, start_date, end_date
-    from StorageData
-    where item_id = _id;
+    select sd.name, sd.id, sd.store_price, sd.fine, sd.status, sd.start_date, sd.end_date
+    from StorageData sd
+    where sd.item_id = _id;
 end;
 $$
 language plpgsql;
@@ -101,8 +101,8 @@ create or replace function set_sdata_end_date(
 $$
 begin
   return query
-    update StorageData set end_date = _edate where id = _id
-      returning name, id, store_price, fine, status, start_date, end_date;
+    update StorageData set end_date = _edate where StorageData.id = _id
+      returning StorageData.name, StorageData.id, StorageData.store_price, StorageData.fine, StorageData.status, StorageData.start_date, StorageData.end_date;
 end;
 $$
 language plpgsql;
@@ -123,14 +123,14 @@ create or replace function set_sdata_fine(
 $$
 begin
   return query
-    update StorageData set fine = _fine where id = _id
-      returning name, id, store_price, fine, status, start_date, end_date;
+    update StorageData set fine = _fine where StorageData/id = _id
+      returning StorageData.name, StorageData.id, StorageData.store_price, StorageData.fine, StorageData.status, StorageData.start_date, StorageData.end_date;
 end;
 $$
 language plpgsql;
 
 -- 7
-create or replace function set_sdata_prie(
+create or replace function set_sdata_price(
   _id int,
   _sprice numeric(10, 2)
 ) returns table (
@@ -145,8 +145,8 @@ create or replace function set_sdata_prie(
 $$
 begin
   return query
-    update StorageData set store_price = _sprice where id = _id
-      returning name, id, store_price, fine, status, start_date, end_date;
+    update StorageData set store_price = _sprice where StorageData.id = _id
+      returning StorageData.name, StorageData.id, StorageData.store_price, StorageData.fine, StorageData.status, StorageData.start_date, StorageData.end_date;
 end;
 $$
 language plpgsql;
@@ -167,8 +167,8 @@ create or replace function set_sdata_status(
 $$
 begin
   return query
-    update StorageData set status = _status where id = _id
-      returning name, id, store_price, fine, status, start_date, end_date;
+    update StorageData set status = _status where StorageData.id = _id
+      returning StorageData.name, StorageData.id, StorageData.store_price, StorageData.fine, StorageData.status, StorageData.start_date, StorageData.end_date;
 end;
 $$
 language plpgsql;

@@ -11,7 +11,8 @@ $$
 begin
   return query
     insert into Comments (user_id, entries, rate)
-      values (_user_id, _entries, _rate) returning id, post_date;
+    values (_user_id, _entries, _rate)
+    returning Comments.id, Comments.post_date;
 end;
 $$
 language plpgsql;
@@ -28,7 +29,7 @@ create or replace function remove_comment(
 $$
 begin
   return query
-    delete from Comments where id = _id returning user_id, entries, rate, post_date;
+    delete from Comments c where id = _id returning c.user_id, c.entries, c.rate, c.post_date;
 end;
 $$
 language plpgsql;
@@ -46,8 +47,9 @@ create or replace function set_comment_entries(
 ) as
 $$
 begin
-  update Comments set entries = _entries where id = _id
-    returning id, user_id, rate, post_date, entries;
+  return query
+    update Comments set entries = _entries where Comments.id = _id
+      returning Comments.id, Comments.user_id, Comments.rate, Comments.post_date, Comments.entries;
 end;
 $$
 language plpgsql;
@@ -65,8 +67,9 @@ create or replace function set_comment_rate(
 ) as
 $$
 begin
-  update Comments set rate = _rate where id = _id
-    returning id, user_id, rate, post_date, entries;
+  return query
+    update Comments set rate = _rate where Comments.id = _id
+      returning Comments.id, Comments.user_id, Comments.rate, Comments.post_date, Comments.entries;
 end;
 $$
 language plpgsql;
@@ -82,7 +85,8 @@ create or replace function get_user_comments(
 ) as
 $$
 begin
-  select id, rate, post_date, entries from Comments where user_id = _id;
+  return query
+    select c.id, c.rate, c.post_date, c.entries from Comments c where c.user_id = _id;
 end;
 $$
 language plpgsql;
@@ -98,7 +102,10 @@ create or replace function get_comments_by_rate(
 ) as
 $$
 begin
-  select id, user_id, post_date, entries from Comments where rate = _rate;
+  return query
+    select c.id, c.user_id, c.post_date, c.entries
+    from Comments c
+    where c.rate = _rate;
 end;
 $$
 language plpgsql;
@@ -114,7 +121,10 @@ create or replace function get_comments_by_date(
 ) as
 $$
 begin
-  select id, user_id, rate, entries from Comments where post_date = _post_date;
+  return query
+    select c.id, c.user_id, c.rate, c.entries
+    from Comments c
+    where c.post_date = _post_date;
 end;
 $$
 language plpgsql;

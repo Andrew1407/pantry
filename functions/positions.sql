@@ -10,7 +10,7 @@ $$
 begin
   return query
     insert into Positions (person_salary, name, max_workers)
-      values (_person_salary, _name, _max_workers) returning id;
+      values (_person_salary, _name, _max_workers) returning Positions.id;
 end;
 $$
 language plpgsql;
@@ -26,7 +26,7 @@ create or replace function remove_position(
 $$
 begin
   return query
-    delete from Positions where id = _id returning name, person_salary, max_workers;
+    delete from Positions p where p.id = _id returning p.name, p.person_salary, p.max_workers;
 end;
 $$
 language plpgsql;
@@ -41,7 +41,8 @@ returns table (
 ) as
 $$
 begin
-  select * from Positions;
+  return query
+    select p.id, p.name, p.person_salary, p.max_workers from Positions p;
 end;
 $$
 language plpgsql;
@@ -57,7 +58,10 @@ create or replace function get_position_by_max_workers(
 ) as
 $$
 begin
-  select * from Positions where max_workers = _max_workers;
+  return query
+    select p.id, p.name, p.person_salary, p.max_workers 
+    from Positions p
+    where p.max_workers = _max_workers;
 end;
 $$
 language plpgsql;
@@ -73,7 +77,9 @@ create or replace function get_position_by_salary(
 ) as
 $$
 begin
-  select * from Positions where person_salary = _person_salary;
+  select p.id, p.name, p.person_salary, p.max_workers
+  from Positions p
+  where p.person_salary = _person_salary;
 end;
 $$
 language plpgsql;
@@ -89,7 +95,9 @@ create or replace function get_position_by_name(
 ) as
 $$
 begin
-  select * from Positions where name = _name;
+  select p.id, p.name, p.person_salary, p.max_workers
+  from Positions p
+  where p.name = _name;
 end;
 $$
 language plpgsql;
@@ -104,7 +112,9 @@ create or replace function set_position_name(
 ) as
 $$
 begin
-  update Positions set name = _name where id = _id returning id, name;
+  update Positions set name = _name
+  where Positions.id = _id
+  returning Positions.id, Positions.name;
 end;
 $$
 language plpgsql;

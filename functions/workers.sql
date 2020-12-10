@@ -2,7 +2,7 @@
 create or replace function get_all_workers()
 returns table (
   id int,
-  full_name varchar(150),
+  full_name text,
   work varchar(25),
   reg_date timestamp,
   passport varchar(30),
@@ -40,8 +40,8 @@ create or replace function remove_worker(
 $$
 begin
   return query
-    delete from Workers where id = _id
-    returning shift, wage, reg_date;
+    delete from Workers w where w.id = _id
+    returning w.shift, w.wage, w.reg_date;
 end;
 $$
 language plpgsql;
@@ -62,7 +62,7 @@ begin
   return query
     insert into Workers (person_id, position_id, passport, wage, shift)
       values (_person_id, _position_id, _passport, _wage, _shift)
-    returning id, reg_date;
+    returning Workers.id, Workers.reg_date;
 end;
 $$
 language plpgsql;
@@ -72,7 +72,7 @@ create or replace function get_workers_by_shift(
   _shift int
 ) returns table (
   id int,
-  full_name varchar(150),
+  full_name text,
   work varchar(25),
   reg_date timestamp,
   passport varchar(30),
@@ -100,7 +100,7 @@ language plpgsql;
 
 -- 5
 create or replace function get_workers_by_full_name(
-  _full_name varchar(150)
+  _full_name text
 ) returns table (
   id int,
   work varchar(25),
@@ -134,7 +134,9 @@ create or replace function set_worker_wage(
 $$
 begin
   return query
-    update Workers set wage = _wage where id = _id returning id, wage;
+    update Workers set wage = _wage
+    where Workers.id = _id
+    returning Workers.id, Workers.wage;
 end;
 $$
 language plpgsql;
@@ -150,7 +152,9 @@ create or replace function set_worker_shift(
 $$
 begin
   return query
-    update Workers set shift = _shift where id = _id returning id, shift;
+    update Workers set shift = _shift
+    where Workers.id = _i
+    returning Workers.id, Workers.shift;
 end;
 $$
 language plpgsql;

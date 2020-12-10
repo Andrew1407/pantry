@@ -8,14 +8,14 @@ create or replace function add_person(
   _phone varchar(15)
 ) returns table (
   id int,
-  full_name varchar(150)
+  full_name text
 ) as
 $$
 begin
   return query
     insert into Persons (name, second_name, surname, email, phone, address)
       values (_name, _second_name, _surname, _email, _phone, _address)
-    returning id, concat(surname, ' ', name, ' ', second_name) as full_name;
+    returning Persons.id, concat(surname, ' ', name, ' ', second_name) as full_name;
 end;
 $$
 language plpgsql;
@@ -25,13 +25,13 @@ create or replace function remove_person(
   _id int
 ) returns table (
   id int,
-  full_name varchar(150)
+  full_name text
 ) as
 $$
 begin
   return query
-    delete from Persons where id = _id
-      returning id, concat(surname, ' ', name, ' ', second_name) as full_name;
+    delete from Persons p where id = _id
+      returning p.id, concat(surname, ' ', name, ' ', second_name) as full_name;
 end;
 $$
 language plpgsql;
@@ -40,7 +40,7 @@ language plpgsql;
 create or replace function get_person(
   _id int
 ) returns table (
-  full_name varchar(150),
+  full_name text,
   email varchar(40),
   phone varchar(15),
   address varchar(100)
@@ -49,9 +49,9 @@ $$
 begin
   return query
     select
-      concat(surname, ' ', name, ' ', second_name) as full_name, email, phone, address
-      from Persons
-      where id = _id;
+      concat(surname, ' ', name, ' ', second_name) as full_name, p.email, p.phone, p.address
+      from Persons p
+      where p.id = _id;
 end;
 $$
 language plpgsql;
@@ -59,20 +59,20 @@ language plpgsql;
 -- 4
 create or replace function update_person_full_name(
   _id int,
-  _full_name varchar(150)
+  _full_name text
 ) returns table (
   id int,
-  full_name varchar(150)
+  full_name text
 ) as
 $$
 begin
   return query
-    update Persons set
+    update Persons p set
       surname = split_part(_full_name, ' ', 1),
       name = split_part(_full_name, ' ', 2),
       second_name = split_part(_full_name, ' ', 3)
-    where id = _id
-    returning id, concat(surname, ' ', name, ' ', second_name) as full_name;
+    where p.id = _id
+    returning p.id, concat(surname, ' ', name, ' ', second_name) as full_name;
 end;
 $$
 language plpgsql;
@@ -90,11 +90,11 @@ create or replace function update_person_email_addr(
 $$
 begin
   return query
-    update Persons set
-      email = _email,
-      address = _address
-    where id = _id
-    returning id, email, address;
+    update Persons p set
+      p.email = _email,
+      p.address = _address
+    where p.id = _id
+    returning p.id, p.email, p.address;
 end;
 $$
 language plpgsql;

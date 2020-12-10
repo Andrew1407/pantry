@@ -1,7 +1,7 @@
 -- 1
 create or replace function get_user_personal()
 returns table (
-  full_name varchar(150),
+  full_name text,
   email varchar(40),
   phone varchar(15),
   address varchar(100)
@@ -28,7 +28,7 @@ returns table (
 $$
 begin
   return query
-    select reg_date, nickname, password from users;
+    select u.nickname, u.reg_date, u.password from users u;
 end;
 $$
 language plpgsql;
@@ -44,7 +44,7 @@ create or replace function get_user_comments(
 $$
 begin
   return query
-    select c.post_date, c.rate, c.entries
+    select c.rate, c.post_date, c.entries
       from comments c
       inner join users u
       on c.user_id = u.id
@@ -57,9 +57,8 @@ language plpgsql;
 create or replace function get_user_comments_amount(
   uname varchar(40)
 ) returns table (
-  rate int,
-  post_date timestamp,
-  entries text
+  nickname varchar(40),
+  comments_amount int
 ) as
 $$
 begin
@@ -100,19 +99,18 @@ create or replace function set_user_email(
 )
 returns table (
   id int,
-  nickname varchar(40),
   email varchar(40)
 ) as
 $$
 begin
   return query
-    update persons set email = set_email where id = (
+    update persons set email = set_email where persons.id = (
       select p.id
       from persons p
       inner join users u
       on p.id = u.person_id
-      where nickname = search_name
-    ) returning id, nickname, email;
+      where u.nickname = search_name
+    ) returning persons.id, persons.email;
 end;
 $$
 language plpgsql;
@@ -168,7 +166,7 @@ language plpgsql;
 create or replace function get_user_items_terms(
   uname varchar(40)
 ) returns table (
-  storage_term timestamp,
+  storage_term interval,
   item_name varchar(60),
   id int
 ) as
@@ -204,7 +202,7 @@ begin
       left join users u
       on u.id = g.user_id
       where u.nickname = 'plagHunter' and g.name = 'Скрипка'
-    ) returning fine, start_date, end_date;
+    ) returning storageData.fine, storageData.start_date, storageData.end_date;
 end;
 $$
 language plpgsql;
@@ -238,7 +236,7 @@ create or replace function get_user_goods_amount(
   uname varchar(40)
 ) returns table (
   name varchar(40),
-  goods_amount int
+  goods_amount bigint
 ) as
 $$
 begin
@@ -256,7 +254,7 @@ language plpgsql;
 create or replace function get_users_goods_amount()
 returns table (
   name varchar(40),
-  goods_amount int
+  goods_amount bigint
 ) as
 $$
 begin
@@ -282,9 +280,9 @@ create or replace function remove_user_item(
 $$
 begin
   return query
-    delete from goods where name = iname and user_id = (
+    delete from goods g where g.name = iname and g.user_id = (
     select id from users where nickname = uname
-  ) returning id, name, user_id;
+  ) returning g.id, g.name, g.user_id;
 end;
 $$
 language plpgsql;
@@ -292,7 +290,7 @@ language plpgsql;
 -- 15
 create or replace function get_workers_allowance()
 returns table (
-  full_name varchar(150),
+  full_name text,
   allowance numeric(7, 2),
   work varchar(25)
 ) as
@@ -318,7 +316,7 @@ create or replace function get_workers_by_shift(
   search_shift int
 )
 returns table (
-  full_name varchar(150),
+  full_name text,
   reg_date timestamp,
   work varchar(25)
 ) as

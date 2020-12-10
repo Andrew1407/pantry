@@ -12,7 +12,7 @@ begin
   return query
     insert into Users (person_id, nickname, password)
       values (_person_id, _nickname, _password)
-    returning id, reg_date;
+    returning Users.id, Users.reg_date;
 end;
 $$
 language plpgsql;
@@ -27,7 +27,7 @@ create or replace function remove_user(
 $$
 begin
   return query
-    delete from Users where id = _id returning person_id, nickname;
+    delete from Users u where u.id = _id returning u.person_id, u.nickname;
 end;
 $$
 language plpgsql;
@@ -36,7 +36,7 @@ language plpgsql;
 create or replace function get_all_users()
 returns table (
   id int,
-  full_name varchar(150),
+  full_name text,
   nickname varchar(40),
   email varchar(40),
   password varchar(60),
@@ -64,7 +64,7 @@ create or replace function get_users_empty_email()
 returns table (
   id int,
   person_id int,
-  full_name varchar(150),
+  full_name text,
   nickname varchar(40),
   password varchar(60),
   reg_date timestamp
